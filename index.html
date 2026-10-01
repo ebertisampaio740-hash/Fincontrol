@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1020">
+  <title>FinControl — Gestão Financeira</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-icon">₿</div>
+        <div><strong>FinControl</strong><span>Gestão financeira</span></div>
+      </div>
+      <nav>
+        <button class="nav-item active" data-section="dashboard">⌂ <span>Dashboard</span></button>
+        <button class="nav-item" data-section="transactions">⇄ <span>Lançamentos</span></button>
+        <button class="nav-item" data-section="budgets">◫ <span>Orçamentos</span></button>
+        <button class="nav-item" data-section="goals">◎ <span>Metas</span></button>
+        <button class="nav-item" data-section="recurring">↻ <span>Recorrentes</span></button>
+        <button class="nav-item" data-section="reports">▥ <span>Relatórios</span></button>
+        <button class="nav-item" data-section="plans">★ <span>Planos</span></button>
+        <button class="nav-item" data-section="settings">⚙ <span>Configurações</span></button>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="plan-badge"><span id="currentPlanBadge">Grátis</span><small>Plano atual</small></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="icon-btn mobile-menu" id="menuBtn">☰</button>
+        <div>
+          <h1 id="pageTitle">Dashboard</h1>
+          <p id="pageSubtitle">Visão geral das suas finanças</p>
+        </div>
+        <div class="top-actions">
+          <button class="icon-btn" id="themeBtn" title="Alternar tema">☾</button>
+          <button class="avatar" id="profileBtn">ES</button>
+        </div>
+      </header>
+
+      <section id="dashboard" class="section active">
+        <div class="welcome-row">
+          <div>
+            <h2>Olá, <span id="userNameLabel">Usuário</span> 👋</h2>
+            <p>Veja como está sua vida financeira neste mês.</p>
+          </div>
+          <button class="primary-btn" id="quickAddBtn">＋ Novo lançamento</button>
+        </div>
+
+        <div class="cards-grid">
+          <article class="stat-card income">
+            <div class="stat-icon">↗</div><div><span>Receitas</span><strong id="incomeTotal">R$ 0,00</strong><small id="incomeDelta">Este mês</small></div>
+          </article>
+          <article class="stat-card expense">
+            <div class="stat-icon">↘</div><div><span>Despesas</span><strong id="expenseTotal">R$ 0,00</strong><small id="expenseDelta">Este mês</small></div>
+          </article>
+          <article class="stat-card balance">
+            <div class="stat-icon">◈</div><div><span>Saldo</span><strong id="balanceTotal">R$ 0,00</strong><small>Resultado do mês</small></div>
+          </article>
+          <article class="stat-card savings">
+            <div class="stat-icon">◎</div><div><span>Taxa de economia</span><strong id="savingRate">0%</strong><small>Receita que sobrou</small></div>
+          </article>
+        </div>
+
+        <div class="grid-2">
+          <article class="panel chart-panel">
+            <div class="panel-head"><div><h3>Fluxo de caixa</h3><p>Receitas x despesas</p></div><select id="chartPeriod"><option value="6">6 meses</option><option value="12">12 meses</option></select></div>
+            <canvas id="cashflowChart"></canvas>
+          </article>
+          <article class="panel">
+            <div class="panel-head"><div><h3>Despesas por categoria</h3><p>Distribuição do mês</p></div></div>
+            <canvas id="categoryChart"></canvas>
+            <div id="categoryLegend" class="legend"></div>
+          </article>
+        </div>
+
+        <div class="grid-2">
+          <article class="panel">
+            <div class="panel-head"><div><h3>Últimos lançamentos</h3><p>Movimentações recentes</p></div><button class="text-btn" data-go="transactions">Ver todos</button></div>
+            <div id="recentTransactions"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-head"><div><h3>Metas financeiras</h3><p>Seu progresso</p></div><button class="text-btn" data-go="goals">Gerenciar</button></div>
+            <div id="goalPreview"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="transactions" class="section">
+        <div class="section-head"><div><h2>Lançamentos</h2><p>Controle receitas, despesas e transferências.</p></div><button class="primary-btn" id="addTransactionBtn">＋ Adicionar</button></div>
+        <div class="toolbar panel">
+          <input id="searchTransactions" placeholder="🔎 Buscar descrição...">
+          <select id="filterType"><option value="all">Todos</option><option value="income">Receitas</option><option value="expense">Despesas</option></select>
+          <select id="filterCategory"><option value="all">Todas categorias</option></select>
+          <input type="month" id="filterMonth">
+        </div>
+        <div class="panel table-wrap"><table><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Tipo</th><th>Conta</th><th>Valor</th><th></th></tr></thead><tbody id="transactionsTable"></tbody></table></div>
+      </section>
+
+      <section id="budgets" class="section">
+        <div class="section-head"><div><h2>Orçamentos</h2><p>Defina limites para não perder o controle.</p></div><button class="primary-btn" id="addBudgetBtn">＋ Novo orçamento</button></div>
+        <div id="budgetsGrid" class="cards-grid"></div>
+      </section>
+
+      <section id="goals" class="section">
+        <div class="section-head"><div><h2>Metas financeiras</h2><p>Transforme objetivos em planos mensuráveis.</p></div><button class="primary-btn" id="addGoalBtn">＋ Nova meta</button></div>
+        <div id="goalsGrid" class="goals-grid"></div>
+      </section>
+
+      <section id="recurring" class="section">
+        <div class="section-head"><div><h2>Recorrentes</h2><p>Contas e receitas que se repetem automaticamente.</p></div><button class="primary-btn" id="addRecurringBtn">＋ Novo recorrente</button></div>
+        <div id="recurringGrid" class="recurring-grid"></div>
+      </section>
+
+      <section id="reports" class="section">
+        <div class="section-head"><div><h2>Relatórios</h2><p>Analise seu comportamento financeiro.</p></div><button class="secondary-btn" id="exportBtn">⇩ Exportar CSV</button></div>
+        <div class="grid-2">
+          <article class="panel"><h3>Resumo anual</h3><canvas id="annualChart"></canvas></article>
+          <article class="panel"><h3>Indicadores</h3><div id="reportIndicators" class="indicator-list"></div></article>
+        </div>
+      </section>
+
+      <section id="plans" class="section">
+        <div class="pricing-hero"><span class="eyebrow">FINCONTROL PREMIUM</span><h2>Escolha seu plano</h2><p>Desbloqueie recursos avançados para organizar sua vida financeira.</p></div>
+        <div class="pricing-grid">
+          <article class="price-card">
+            <div class="price-top"><span class="plan-label">Mensal</span><span class="price-chip">Flexível</span></div>
+            <h3>FinControl Pro</h3><div class="price">R$ 9,90 <small>/mês</small></div>
+            <ul><li>✓ Lançamentos ilimitados</li><li>✓ Relatórios avançados</li><li>✓ Metas e orçamentos ilimitados</li><li>✓ Backup/exportação</li></ul>
+            <button class="primary-btn full" data-plan="monthly">Assinar mensal</button>
+          </article>
+          <article class="price-card featured">
+            <div class="popular">MAIS ECONÔMICO</div>
+            <div class="price-top"><span class="plan-label">Anual</span><span class="price-chip">Economize</span></div>
+            <h3>FinControl Pro Anual</h3><div class="price">R$ 99,00 <small>/ano</small></div>
+            <ul><li>✓ Tudo do plano mensal</li><li>✓ 2 meses de economia</li><li>✓ Prioridade em novidades</li><li>✓ Recursos premium futuros</li></ul>
+            <button class="primary-btn full" data-plan="annual">Assinar anual</button>
+          </article>
+        </div>
+        <div class="payment-note">Pagamento seguro: configure os links do seu gateway no arquivo <code>app.js</code>. Não coloque Access Token/segredo no frontend.</div>
+      </section>
+
+      <section id="settings" class="section">
+        <div class="section-head"><div><h2>Configurações</h2><p>Personalize seu FinControl.</p></div></div>
+        <div class="settings-grid">
+          <article class="panel form-panel"><h3>Perfil</h3><label>Seu nome<input id="settingsName" placeholder="Seu nome"></label><label>Moeda<select id="settingsCurrency"><option value="BRL">Real brasileiro (R$)</option><option value="USD">Dólar (US$)</option></select></label><button class="primary-btn" id="saveSettingsBtn">Salvar alterações</button></article>
+          <article class="panel form-panel"><h3>Dados</h3><button class="secondary-btn" id="seedBtn">Carregar dados de demonstração</button><button class="danger-btn" id="clearBtn">Apagar todos os dados</button><p class="muted">Os dados desta versão ficam no armazenamento local do navegador.</p></article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal" id="modal"></div>
+  </div>
+  <div id="toast" class="toast"></div>
+  <script src="app.js"></script>
+</body>
+</html>
